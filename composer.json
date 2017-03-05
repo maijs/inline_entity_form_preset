@@ -1,0 +1,15 @@
+{
+    "name": "maijs/inline_entity_form_template",
+    "description": "Allows adding existing entities from a template to an inline entity form widget",
+    "type": "drupal-module",
+    "require": {
+        "drupal/inline_entity_form": "~1.0",
+    },
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "maijs",
+            "email": "raimonds.kalnins@gmail.com"
+        }
+    ]
+}
