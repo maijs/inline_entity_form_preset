@@ -15,7 +15,7 @@ Assuming that you have installed [`Inline Entity Form`][inline_entity_form] modu
 
 1. You have a content type `Notification` with a reference field `Users` which is intended to send a notification to selected users.
 2. Almost every `Notification` should be sent to the management team (5 users).
-3. You are tired of selecting at least 5 users from the management team in an Inline entity form widget every time you create a notification.
-4. You want to click `Add from existing template`, select a notification node called `Notification to management team (template)`, click `Add` and have 5 users in the template listed in an Inline entity form widget.
+3. You are tired of selecting at least 5 users from the management team in an `Inline entity form` widget every time you create a notification.
+4. You want to click `Add from existing template`, select a notification node called `Notification to management team (template)`, click `Add` and have 5 users from the template listed in an `Inline entity form` widget.
 
 [inline_entity_form]: https://www.drupal.org/project/inline_entity_form
