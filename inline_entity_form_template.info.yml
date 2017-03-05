@@ -1,0 +1,4 @@
+name: Inline Entity Form Template
+type: module
+description: Allows adding existing entities from a template to an inline entity form widget
+core: 8.x
