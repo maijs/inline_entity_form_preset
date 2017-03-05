@@ -82,7 +82,7 @@ class InlineEntityFormTemplate {
       if (empty($open_form)) {
         $element['actions']['ief_add_existing_from_template'] = [
           '#type' => 'submit',
-          '#value' => t('Add existing from template'),
+          '#value' => t('Add existing from a template'),
           '#ajax' => [
             'callback' => 'inline_entity_form_get_element',
             'wrapper' => $wrapper,
@@ -109,7 +109,7 @@ class InlineEntityFormTemplate {
             '#parents' => $parents,
             '#entity_type' => $target_type,
             '#field_name' => $items->getName(),
-            '#title' => t('Add existing from template'),
+            '#title' => t('Add existing from a template'),
             '#ief_element_submit' => [[get_called_class(), 'formSubmit']],
             '#ief_labels' => $labels,
           ];

@@ -8,8 +8,11 @@ Assuming that you have installed [`Inline Entity Form`][inline_entity_form] modu
 
 1. Install `Inline Entity Form Template` module.
 2. On the form display management page of a selected entity type click on the cog to configure the `Inline Entity Form - Complex` widget.
-3. Check `Allow users to add existing entities from a template`.
-4. Now you're able to select an entity of the same type as an entity containing the entity reference field and copy over the references.
+3. Check `Allow users to add existing entities from a template` and save the settings.
+4. Create a entity of selected entity type which will be the template and add entity references to it.
+5. Create or edit an entity of selected entity type, click on `Add existing from a template` in the inline entity form widget, type the name of the template entity and click `Add` to copy the entity references.
+
+Note: Entity references from the template will be appended to the current list of entity references.
 
 ## Example
 
