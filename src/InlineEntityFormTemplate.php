@@ -15,6 +15,24 @@ use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex;
 class InlineEntityFormTemplate {
 
   /**
+   * Alters the summary of widget settings form.
+   *
+   * @param array $summary
+   * @param array $context
+   */
+  public static function alterWidgetSettingsSummary(&$summary, $context) {
+    /** @var \Drupal\Core\Field\WidgetInterface $widget */
+    $widget = $context['widget'];
+
+    if ($widget->getPluginId() == 'inline_entity_form_complex') {
+      if ($status = $widget->getThirdPartySetting('inline_entity_form_template', 'allow_existing_template')) {
+        // @todo Add reference to referenced entity type (singular and plural).
+        $summary[] = t('Existing entities can be referenced from a template.');
+      }
+    }
+  }
+
+  /**
    * Alter widget settings form.
    *
    * @param \Drupal\Core\Field\WidgetInterface $plugin
@@ -40,16 +58,38 @@ class InlineEntityFormTemplate {
   }
 
   /**
-   * Alters the summary of widget settings form.
+   * Adds custom submit handler to entity form display form.
+   *
+   * @param $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
-  public static function alterWidgetSettingsSummary(&$summary, $context) {
-    /** @var \Drupal\Core\Field\WidgetInterface $widget */
-    $widget = $context['widget'];
+  public static function alterEntityFormDisplayForm(&$form, FormStateInterface $form_state) {
+    array_unshift($form['actions']['submit']['#submit'], [get_called_class(), 'entityFormDisplayFormSubmit']);
+  }
 
-    if ($widget->getPluginId() == 'inline_entity_form_complex') {
-      if ($status = $widget->getThirdPartySetting('inline_entity_form_template', 'allow_existing_template')) {
-        // @todo Add reference to referenced entity type (singular and plural).
-        $summary[] = t('Existing entities can be referenced from a template.');
+  /**
+   * Removes values from a display if adding from a template is not allowed.
+   *
+   * @param $form
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   */
+  public static function entityFormDisplayFormSubmit($form, FormStateInterface $form_state) {
+    foreach ($form_state->getValue('fields') as $field_name => $value) {
+      if (!empty($value['type']) && $value['type'] == 'inline_entity_form_complex') {
+        /** @var \Drupal\Core\Entity\EntityFormInterface $entity_form */
+        $entity_form = $form_state->getFormObject();
+        /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $display */
+        $display = $entity_form->getEntity();
+
+        // Get display component.
+        if ($display_component = $display->getComponent($field_name)) {
+          // Check if adding existing from a template is allowed.
+          if (empty($display_component['third_party_settings']['inline_entity_form_template']['allow_existing_template'])) {
+            // Unset the module settings if adding existing from a template is not allowed.
+            unset($display_component['third_party_settings']['inline_entity_form_template']);
+            $display->setComponent($field_name, $display_component);
+          }
+        }
       }
     }
   }
@@ -138,16 +178,6 @@ class InlineEntityFormTemplate {
   }
 
   /**
-   * Adds custom submit handler to entity form display form.
-   *
-   * @param $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   */
-  public static function alterEntityFormDisplayForm(&$form, FormStateInterface $form_state) {
-    array_unshift($form['actions']['submit']['#submit'], [get_called_class(), 'entityFormDisplayFormSubmit']);
-  }
-
-  /**
    * Adds template referenced entities to the entity.
    *
    * @param $form
@@ -157,62 +187,37 @@ class InlineEntityFormTemplate {
     try {
       $form_values = NestedArray::getValue($form_state->getValues(), $form['#parents']);
       $template_storage = \Drupal::entityTypeManager()->getStorage($form['#entity_type']);
-      $template_entity = $template_storage->load($form_values['entity_id']);
-      $field_name = $form['#field_name'];
 
-      // Get referenced entities from the template.
-      if ($template_referenced_entities = $template_entity->get($field_name)->referencedEntities()) {
-        $ief_id = $form['#ief_id'];
-        $entities = &$form_state->get(['inline_entity_form', $ief_id, 'entities']);
+      if ($template_entity = $template_storage->load($form_values['entity_id'])) {
+        $field_name = $form['#field_name'];
 
-        // Determine the correct weight of the starting element.
-        $weight = 0;
-        if ($entities) {
-          $weight = max(array_keys($entities)) + 1;
+        // Get referenced entities from the template.
+        if ($template_referenced_entities = $template_entity->get($field_name)->referencedEntities()) {
+          $ief_id = $form['#ief_id'];
+          $entities = &$form_state->get(['inline_entity_form', $ief_id, 'entities']);
+
+          // Determine the correct weight of the starting element.
+          $weight = 0;
+          if ($entities) {
+            $weight = max(array_keys($entities)) + 1;
+          }
+
+          foreach ($template_referenced_entities as $template_referenced_entity) {
+            $entities[] = [
+              'entity' => $template_referenced_entity,
+              'weight' => $weight,
+              'form' => NULL,
+              'needs_save' => FALSE,
+            ];
+            $weight++;
+          }
+
+          $form_state->set(['inline_entity_form', $ief_id, 'entities'], $entities);
         }
-
-        foreach ($template_referenced_entities as $template_referenced_entity) {
-          $entities[] = [
-            'entity' => $template_referenced_entity,
-            'weight' => $weight,
-            'form' => NULL,
-            'needs_save' => FALSE,
-          ];
-          $weight++;
-        }
-
-        $form_state->set(['inline_entity_form', $ief_id, 'entities'], $entities);
       }
     }
     catch (\Exception $e) {
       watchdog_exception('inline_entity_form_template', $e);
-    }
-  }
-
-  /**
-   * Removes values from a display if adding from a template is not allowed.
-   *
-   * @param $form
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   */
-  public static function entityFormDisplayFormSubmit($form, FormStateInterface $form_state) {
-    foreach ($form_state->getValue('fields') as $field_name => $value) {
-      if (!empty($value['type']) && $value['type'] == 'inline_entity_form_complex') {
-        /** @var \Drupal\Core\Entity\EntityFormInterface $entity_form */
-        $entity_form = $form_state->getFormObject();
-        /** @var \Drupal\Core\Entity\Display\EntityFormDisplayInterface $display */
-        $display = $entity_form->getEntity();
-
-        // Get display component.
-        if ($display_component = $display->getComponent($field_name)) {
-          // Check if adding existing from a template is allowed.
-          if (empty($display_component['third_party_settings']['inline_entity_form_template']['allow_existing_template'])) {
-            // Unset the module settings if adding existing from a template is not allowed.
-            unset($display_component['third_party_settings']['inline_entity_form_template']);
-            $display->setComponent($field_name, $display_component);
-          }
-        }
-      }
     }
   }
 
