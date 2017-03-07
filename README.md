@@ -1,6 +1,6 @@
 # Inline Entity Form Template
 
-`inline_entity_form_template` is a module that allows adding existing entities from a template to an inline entity form widget.
+`inline_entity_form_template` is a Drupal 8 module that allows adding existing entities from a template to an inline entity form widget.
 
 ## Usage
 

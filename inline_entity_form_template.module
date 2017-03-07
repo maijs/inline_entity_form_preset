@@ -21,6 +21,16 @@ function inline_entity_form_template_field_widget_third_party_settings_form(Widg
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * @param $form
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function inline_entity_form_template_form_entity_form_display_edit_form_alter(&$form, FormStateInterface $form_state) {
+  InlineEntityFormTemplate::alterEntityFormDisplayForm($form, $form_state);
+}
+
+/**
  * Implements hook_field_widget_settings_summary_alter().
  *
  * @param $summary
