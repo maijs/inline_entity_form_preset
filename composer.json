@@ -3,7 +3,7 @@
     "description": "Allows adding existing references from a preset to an inline entity form widget",
     "type": "drupal-module",
     "require": {
-        "drupal/inline_entity_form": "~1.0",
+        "drupal/inline_entity_form": "~1.0"
     },
     "license": "GPL-2.0+",
     "authors": [
