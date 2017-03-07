@@ -1,0 +1,4 @@
+name: Inline Entity Form Preset
+type: module
+description: Allows adding existing references from a preset to an inline entity form widget
+core: 8.x

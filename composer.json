@@ -1,6 +1,6 @@
 {
-    "name": "maijs/inline_entity_form_template",
-    "description": "Allows adding existing entities from a template to an inline entity form widget",
+    "name": "maijs/inline_entity_form_preset",
+    "description": "Allows adding existing references from a preset to an inline entity form widget",
     "type": "drupal-module",
     "require": {
         "drupal/inline_entity_form": "~1.0",

@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\inline_entity_form_template;
+namespace Drupal\inline_entity_form_preset;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
@@ -10,9 +10,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormComplex;
 
 /**
- * Class InlineEntityFormTemplate
+ * Class InlineEntityFormPreset
  */
-class InlineEntityFormTemplate {
+class InlineEntityFormPreset {
 
   /**
    * Alters the summary of widget settings form.
@@ -25,9 +25,9 @@ class InlineEntityFormTemplate {
     $widget = $context['widget'];
 
     if ($widget->getPluginId() == 'inline_entity_form_complex') {
-      if ($status = $widget->getThirdPartySetting('inline_entity_form_template', 'allow_existing_template')) {
+      if ($status = $widget->getThirdPartySetting('inline_entity_form_preset', 'allow_existing_preset')) {
         // @todo Add reference to referenced entity type (singular and plural).
-        $summary[] = t('Existing entities can be referenced from a template.');
+        $summary[] = t('Existing references can be referenced from a preset.');
       }
     }
   }
@@ -47,10 +47,10 @@ class InlineEntityFormTemplate {
     $element = [];
 
     if ($plugin->getPluginId() == 'inline_entity_form_complex') {
-      $element['allow_existing_template'] = [
+      $element['allow_existing_preset'] = [
         '#type' => 'checkbox',
-        '#title' => t('Allow users to add existing entities from a template.'),
-        '#default_value' => $plugin->getThirdPartySetting('inline_entity_form_template', 'allow_existing_template'),
+        '#title' => t('Allow users to add existing references from a preset.'),
+        '#default_value' => $plugin->getThirdPartySetting('inline_entity_form_preset', 'allow_existing_preset'),
       ];
     }
 
@@ -68,7 +68,7 @@ class InlineEntityFormTemplate {
   }
 
   /**
-   * Removes values from a display if adding from a template is not allowed.
+   * Removes values from a display if adding from a preset is not allowed.
    *
    * @param $form
    * @param \Drupal\Core\Form\FormStateInterface $form_state
@@ -83,10 +83,10 @@ class InlineEntityFormTemplate {
 
         // Get display component.
         if ($display_component = $display->getComponent($field_name)) {
-          // Check if adding existing from a template is allowed.
-          if (empty($display_component['third_party_settings']['inline_entity_form_template']['allow_existing_template'])) {
-            // Unset the module settings if adding existing from a template is not allowed.
-            unset($display_component['third_party_settings']['inline_entity_form_template']);
+          // Check if adding existing references from a preset is allowed.
+          if (empty($display_component['third_party_settings']['inline_entity_form_preset']['allow_existing_preset'])) {
+            // Unset the module settings if adding existing references from a preset is not allowed.
+            unset($display_component['third_party_settings']['inline_entity_form_preset']);
             $display->setComponent($field_name, $display_component);
           }
         }
@@ -95,7 +95,7 @@ class InlineEntityFormTemplate {
   }
 
   /**
-   * Alters widget form and adds template selection field.
+   * Alters widget form and adds preset selection field.
    *
    * @param $element
    * @param \Drupal\Core\Form\FormStateInterface $form_state
@@ -105,7 +105,7 @@ class InlineEntityFormTemplate {
     /** @var InlineEntityFormComplex $widget */
     $widget = $context['widget'];
 
-    if ($widget->getThirdPartySetting('inline_entity_form_template', 'allow_existing_template')) {
+    if ($widget->getThirdPartySetting('inline_entity_form_preset', 'allow_existing_preset')) {
       $ief_id = $element['#ief_id'];
       /** @var EntityReferenceFieldItemListInterface $items */
       $items = $context['items'];
@@ -120,19 +120,19 @@ class InlineEntityFormTemplate {
       $open_form = $form_state->get(['inline_entity_form', $ief_id, 'form']);
 
       if (empty($open_form)) {
-        $element['actions']['ief_add_existing_from_template'] = [
+        $element['actions']['ief_add_existing_from_preset'] = [
           '#type' => 'submit',
-          '#value' => t('Add existing from a template'),
+          '#value' => t('Add existing from a preset'),
           '#ajax' => [
             'callback' => 'inline_entity_form_get_element',
             'wrapper' => $wrapper,
           ],
           '#submit' => ['inline_entity_form_open_form'],
-          '#ief_form' => 'ief_add_existing_from_template',
+          '#ief_form' => 'ief_add_existing_from_preset',
         ];
       }
       else {
-        if ($form_state->get(['inline_entity_form', $ief_id, 'form']) == 'ief_add_existing_from_template') {
+        if ($form_state->get(['inline_entity_form', $ief_id, 'form']) == 'ief_add_existing_from_preset') {
           $target_type = $items->getFieldDefinition()->getTargetEntityTypeId();
           /** @var \Drupal\Core\Entity\EntityTypeInterface $target_type_definition */
           $target_type_definition = \Drupal::service('entity_type.manager')->getDefinition($target_type);
@@ -140,8 +140,6 @@ class InlineEntityFormTemplate {
             'singular' => \Drupal::service('entity_type.manager')->getDefinition($target_type)->getSingularLabel(),
           ];
 
-          // @todo Add validation handler ("#element_validate") which fails
-          // the submission if template is the parent of the field.
           $element['form'] = [
             '#type' => 'fieldset',
             '#attributes' => ['class' => ['ief-form', 'ief-form-bottom']],
@@ -149,7 +147,7 @@ class InlineEntityFormTemplate {
             '#parents' => $parents,
             '#entity_type' => $target_type,
             '#field_name' => $items->getName(),
-            '#title' => t('Add existing from a template'),
+            '#title' => t('Add existing from a preset'),
             '#ief_element_submit' => [[get_called_class(), 'inlineEntityFormWidgetSubmit']],
             '#ief_labels' => $labels,
           ];
@@ -166,7 +164,7 @@ class InlineEntityFormTemplate {
           }
 
           $element['form'] += inline_entity_form_reference_form($element['form'], $form_state);
-          $element['form']['actions']['ief_reference_save']['#value'] = t('Add entities from @type_singular', ['@type_singular' => $labels['singular']]);
+          $element['form']['actions']['ief_reference_save']['#value'] = t('Add references from @type_singular', ['@type_singular' => $labels['singular']]);
           $element['form']['entity_id']['#target_type'] = $target_type;
           $element['form']['entity_id']['#selection_handler'] = 'default:' . $target_type;
           $element['form']['entity_id']['#selection_settings']['target_bundles'] = $target_bundles;
@@ -178,21 +176,21 @@ class InlineEntityFormTemplate {
   }
 
   /**
-   * Adds template referenced entities to the entity.
+   * Adds references from a preset to the entity.
    *
-   * @param $form
+   * @param array $form
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    */
   public static function inlineEntityFormWidgetSubmit(&$form, FormStateInterface $form_state) {
     try {
       $form_values = NestedArray::getValue($form_state->getValues(), $form['#parents']);
-      $template_storage = \Drupal::entityTypeManager()->getStorage($form['#entity_type']);
+      $preset_storage = \Drupal::entityTypeManager()->getStorage($form['#entity_type']);
 
-      if ($template_entity = $template_storage->load($form_values['entity_id'])) {
+      if ($preset_entity = $preset_storage->load($form_values['entity_id'])) {
         $field_name = $form['#field_name'];
 
-        // Get referenced entities from the template.
-        if ($template_referenced_entities = $template_entity->get($field_name)->referencedEntities()) {
+        // Get referenced entities from the preset.
+        if ($preset_referenced_entities = $preset_entity->get($field_name)->referencedEntities()) {
           $ief_id = $form['#ief_id'];
           $entities = &$form_state->get(['inline_entity_form', $ief_id, 'entities']);
 
@@ -202,9 +200,9 @@ class InlineEntityFormTemplate {
             $weight = max(array_keys($entities)) + 1;
           }
 
-          foreach ($template_referenced_entities as $template_referenced_entity) {
+          foreach ($preset_referenced_entities as $preset_referenced_entity) {
             $entities[] = [
-              'entity' => $template_referenced_entity,
+              'entity' => $preset_referenced_entity,
               'weight' => $weight,
               'form' => NULL,
               'needs_save' => FALSE,
@@ -217,7 +215,7 @@ class InlineEntityFormTemplate {
       }
     }
     catch (\Exception $e) {
-      watchdog_exception('inline_entity_form_template', $e);
+      watchdog_exception('inline_entity_form_preset', $e);
     }
   }
 
