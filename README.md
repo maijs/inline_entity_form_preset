@@ -8,7 +8,7 @@
 2. Almost every `Notification` should be sent to the management team (5 users).
 3. You are tired of selecting at least 5 users from the management team in an `Inline entity form` widget every time you create a notification.
 4. You want to click `Add existing from a preset`, select a notification entity called `Notification to the management team (preset)`, click `Add` and have references to 5 user entities from the preset copied over to the `Inline entity form` widget.
-5. Additionally, if a notification is related to a design topic, you might also want to add 3 users from the design team by clicking on `Add existing from a preset`, select a notification entity called `Notification to the design team (preset)`, click `Add` and have references to 3 user entities from the preset added to the `Inline entity form` widget.
+5. Additionally, if the notification is related to a design topic, you might also want to add 3 users from the design team by clicking on `Add existing from a preset`, select a notification entity called `Notification to the design team (preset)`, click `Add` and have references to 3 user entities from the preset added to the `Inline entity form` widget.
 
 ## Usage
 
